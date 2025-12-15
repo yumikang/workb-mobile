@@ -184,28 +184,52 @@ const LoginScreen: React.FC = () => {
 
         {/* DEV ONLY - Skip Login */}
         {__DEV__ && (
-          <TouchableOpacity
-            style={styles.devSkipButton}
-            onPress={() => {
-              // 임시 유저로 바로 로그인
-              useAuthStore.setState({
-                user: {
-                  id: 'dev-user',
-                  email: 'dev@workb.com',
-                  name: '개발자',
-                  role: 'admin',
+          <View style={styles.devButtonsContainer}>
+            <TouchableOpacity
+              style={styles.devSkipButton}
+              onPress={() => {
+                // 일반 직원으로 로그인
+                useAuthStore.setState({
+                  user: {
+                    id: 'dev-staff',
+                    email: 'staff@workb.com',
+                    displayName: '김직원',
+                    role: 'member',
+                    workspaceId: 'dev-workspace',
+                    department: '개발팀',
+                  },
+                  token: 'dev-token',
                   workspaceId: 'dev-workspace',
-                },
-                token: 'dev-token',
-                workspaceId: 'dev-workspace',
-                isAuthenticated: true,
-              });
-              // 바로 메인 화면으로 이동
-              navigation.replace('MainTabs');
-            }}
-          >
-            <Text style={styles.devSkipText}>[DEV] 로그인 건너뛰기</Text>
-          </TouchableOpacity>
+                  isAuthenticated: true,
+                });
+                navigation.replace('MainTabs');
+              }}
+            >
+              <Text style={styles.devSkipText}>[DEV] 직원으로 로그인</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.devSkipButton, styles.devAdminButton]}
+              onPress={() => {
+                // 관리자로 로그인
+                useAuthStore.setState({
+                  user: {
+                    id: 'dev-admin',
+                    email: 'admin@workb.com',
+                    displayName: '박관리자',
+                    role: 'admin',
+                    workspaceId: 'dev-workspace',
+                    department: '경영지원팀',
+                  },
+                  token: 'dev-token',
+                  workspaceId: 'dev-workspace',
+                  isAuthenticated: true,
+                });
+                navigation.replace('MainTabs');
+              }}
+            >
+              <Text style={styles.devAdminText}>[DEV] 관리자로 로그인</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -326,13 +350,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
   },
-  devSkipButton: {
+  devButtonsContainer: {
     marginTop: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  devSkipButton: {
     padding: Spacing.md,
     alignItems: 'center',
+    backgroundColor: '#FFF0F0',
+    borderRadius: BorderRadius.md,
+  },
+  devAdminButton: {
+    backgroundColor: '#F0F0FF',
   },
   devSkipText: {
     color: '#FF6B6B',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  devAdminText: {
+    color: '#6B6BFF',
     fontSize: 14,
     fontWeight: '600',
   },
