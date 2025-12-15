@@ -12,6 +12,9 @@ import {
   ScrollView,
   RefreshControl,
   FlatList,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -19,9 +22,18 @@ import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useLeaveStore } from '../../stores';
 import { LeaveRequest, LeaveStatus } from '../../types';
 
+type LeaveTypeOption = 'annual' | 'half_am' | 'half_pm';
+
 const LeaveScreen: React.FC = () => {
   const { requests, balance, isLoading, fetchLeaveData, setupRealtimeListeners, cleanupListeners } = useLeaveStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  // 휴가 신청 모달 상태
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [selectedLeaveType, setSelectedLeaveType] = useState<LeaveTypeOption>('annual');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reason, setReason] = useState('');
 
   useEffect(() => {
     fetchLeaveData();
@@ -37,6 +49,63 @@ const LeaveScreen: React.FC = () => {
     await fetchLeaveData();
     setRefreshing(false);
   }, []);
+
+  const resetRequestForm = () => {
+    setSelectedLeaveType('annual');
+    setStartDate('');
+    setEndDate('');
+    setReason('');
+  };
+
+  const handleOpenRequestModal = () => {
+    resetRequestForm();
+    setShowRequestModal(true);
+  };
+
+  const handleCloseRequestModal = () => {
+    setShowRequestModal(false);
+    resetRequestForm();
+  };
+
+  const handleSubmitRequest = () => {
+    // 유효성 검사
+    if (!startDate) {
+      Alert.alert('알림', '시작일을 입력해주세요.');
+      return;
+    }
+
+    if (selectedLeaveType === 'annual' && !endDate) {
+      Alert.alert('알림', '종료일을 입력해주세요.');
+      return;
+    }
+
+    // DEV: 신청 성공 처리 (실제로는 API 호출)
+    Alert.alert(
+      '휴가 신청 완료',
+      `${getLeaveTypeText(selectedLeaveType)} 신청이 완료되었습니다.\n승인 대기 중입니다.`,
+      [
+        {
+          text: '확인',
+          onPress: () => {
+            handleCloseRequestModal();
+            // DEV: 새로고침
+            fetchLeaveData();
+          },
+        },
+      ]
+    );
+  };
+
+  const getLeaveTypeLabel = (type: LeaveTypeOption) => {
+    switch (type) {
+      case 'annual':
+        return '연차';
+      case 'half_am':
+        return '오전 반차';
+      case 'half_pm':
+        return '오후 반차';
+    }
+  };
 
   const getStatusColor = (status: LeaveStatus) => {
     switch (status) {
@@ -175,7 +244,11 @@ const LeaveScreen: React.FC = () => {
 
         {/* Request Button */}
         <View style={styles.actionSection}>
-          <TouchableOpacity style={styles.requestButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.requestButton}
+            activeOpacity={0.8}
+            onPress={handleOpenRequestModal}
+          >
             <Icon name="add-circle-outline" size={20} color={Colors.surface} />
             <Text style={styles.requestButtonText}>휴가 신청</Text>
           </TouchableOpacity>
@@ -205,6 +278,105 @@ const LeaveScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* 휴가 신청 모달 */}
+      <Modal
+        visible={showRequestModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseRequestModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {/* 모달 헤더 */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>휴가 신청</Text>
+              <TouchableOpacity onPress={handleCloseRequestModal}>
+                <Icon name="close" size={24} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {/* 휴가 유형 선택 */}
+            <View style={styles.formSection}>
+              <Text style={styles.formLabel}>휴가 유형</Text>
+              <View style={styles.leaveTypeSelector}>
+                {(['annual', 'half_am', 'half_pm'] as LeaveTypeOption[]).map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.leaveTypeOption,
+                      selectedLeaveType === type && styles.leaveTypeOptionSelected,
+                    ]}
+                    onPress={() => setSelectedLeaveType(type)}
+                  >
+                    <Text
+                      style={[
+                        styles.leaveTypeOptionText,
+                        selectedLeaveType === type && styles.leaveTypeOptionTextSelected,
+                      ]}
+                    >
+                      {getLeaveTypeLabel(type)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* 날짜 입력 */}
+            <View style={styles.formSection}>
+              <Text style={styles.formLabel}>
+                {selectedLeaveType === 'annual' ? '시작일' : '날짜'}
+              </Text>
+              <TextInput
+                style={styles.formInput}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.textMuted}
+                value={startDate}
+                onChangeText={setStartDate}
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+
+            {selectedLeaveType === 'annual' && (
+              <View style={styles.formSection}>
+                <Text style={styles.formLabel}>종료일</Text>
+                <TextInput
+                  style={styles.formInput}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor={Colors.textMuted}
+                  value={endDate}
+                  onChangeText={setEndDate}
+                  keyboardType="numbers-and-punctuation"
+                />
+              </View>
+            )}
+
+            {/* 사유 입력 */}
+            <View style={styles.formSection}>
+              <Text style={styles.formLabel}>사유 (선택)</Text>
+              <TextInput
+                style={[styles.formInput, styles.formTextArea]}
+                placeholder="휴가 사유를 입력해주세요"
+                placeholderTextColor={Colors.textMuted}
+                value={reason}
+                onChangeText={setReason}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* 제출 버튼 */}
+            <TouchableOpacity
+              style={styles.submitButton}
+              activeOpacity={0.8}
+              onPress={handleSubmitRequest}
+            >
+              <Text style={styles.submitButtonText}>신청하기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -351,6 +523,87 @@ const styles = StyleSheet.create({
     ...Typography.body,
     color: Colors.textMuted,
     marginTop: Spacing.md,
+  },
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    paddingBottom: Spacing.xxxl,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  modalTitle: {
+    ...Typography.heading3,
+    color: Colors.text,
+  },
+  formSection: {
+    marginBottom: Spacing.lg,
+  },
+  formLabel: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  leaveTypeSelector: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  leaveTypeOption: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+  },
+  leaveTypeOptionSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  leaveTypeOptionText: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  leaveTypeOptionTextSelected: {
+    color: Colors.surface,
+  },
+  formInput: {
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    ...Typography.body,
+    color: Colors.text,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  formTextArea: {
+    minHeight: 80,
+    paddingTop: Spacing.md,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+    marginTop: Spacing.md,
+  },
+  submitButtonText: {
+    ...Typography.button,
+    color: Colors.surface,
   },
 });
 
