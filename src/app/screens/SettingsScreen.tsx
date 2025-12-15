@@ -122,7 +122,7 @@ const SettingsScreen: React.FC = () => {
             <SettingItem
               icon="notifications-outline"
               title="푸시 알림"
-              subtitle="출퇴근, 휴가, 공지사항 알림"
+              subtitle="출퇴근, 휴가, 게시판 알림"
               rightElement={
                 <Switch
                   value={pushEnabled}

@@ -1,6 +1,6 @@
 /**
- * WORKB Mobile - Notice Detail Screen
- * 공지사항 상세 페이지 + 댓글 기능
+ * WORKB Mobile - Board Post Detail Screen
+ * 게시판 상세 페이지 + 댓글 기능 (어드민 Board/BoardComment 모델과 연동)
  */
 
 import React, { useState } from 'react';
@@ -128,7 +128,7 @@ const NoticeDetailScreen: React.FC = () => {
         >
           <Icon name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>공지사항</Text>
+        <Text style={styles.headerTitle}>게시판</Text>
         <View style={styles.headerRight} />
       </View>
 

@@ -267,14 +267,14 @@ const HomeScreen: React.FC = () => {
               <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
             </TouchableOpacity>
 
-            {/* 공지사항 작성 */}
+            {/* 게시글 작성 */}
             <TouchableOpacity style={styles.adminCard}>
               <View style={styles.adminCardIcon}>
-                <Icon name="megaphone-outline" size={24} color={Colors.warning} />
+                <Icon name="document-text-outline" size={24} color={Colors.warning} />
               </View>
               <View style={styles.adminCardContent}>
-                <Text style={styles.adminCardTitle}>공지사항 작성</Text>
-                <Text style={styles.adminCardSubtitle}>새 공지사항 등록</Text>
+                <Text style={styles.adminCardTitle}>게시글 작성</Text>
+                <Text style={styles.adminCardSubtitle}>새 게시글 등록</Text>
               </View>
               <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
             </TouchableOpacity>
@@ -304,6 +304,41 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Work Hours Summary */}
+        <View style={styles.workHoursSection}>
+          <Text style={styles.sectionTitle}>근무 현황</Text>
+
+          {/* Weekly Hours */}
+          <View style={styles.workHoursCard}>
+            <View style={styles.workHoursHeader}>
+              <View style={styles.workHoursLabelRow}>
+                <Icon name="calendar-outline" size={16} color={Colors.primary} />
+                <Text style={styles.workHoursLabel}>이번주</Text>
+              </View>
+              <Text style={styles.workHoursValue}>32h / 40h</Text>
+            </View>
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, { width: '80%' }]} />
+            </View>
+            <Text style={styles.workHoursRemaining}>잔여 8시간</Text>
+          </View>
+
+          {/* Monthly Hours */}
+          <View style={styles.workHoursCard}>
+            <View style={styles.workHoursHeader}>
+              <View style={styles.workHoursLabelRow}>
+                <Icon name="stats-chart-outline" size={16} color={Colors.secondary} />
+                <Text style={styles.workHoursLabel}>이번달</Text>
+              </View>
+              <Text style={styles.workHoursValue}>98h / 160h</Text>
+            </View>
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, styles.progressBarMonthly, { width: '61%' }]} />
+            </View>
+            <Text style={styles.workHoursRemaining}>잔여 62시간</Text>
+          </View>
+        </View>
 
         {/* Today's Schedule - 공통 표시 */}
         <View style={styles.scheduleSection}>
@@ -661,6 +696,58 @@ const styles = StyleSheet.create({
   modalButtonText: {
     ...Typography.bodyBold,
     color: Colors.text,
+  },
+  // Work Hours Section Styles
+  workHoursSection: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.lg,
+  },
+  workHoursCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  workHoursHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  workHoursLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  workHoursLabel: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+  },
+  workHoursValue: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.full,
+    marginBottom: Spacing.sm,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.full,
+  },
+  progressBarMonthly: {
+    backgroundColor: Colors.secondary,
+  },
+  workHoursRemaining: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    textAlign: 'right',
   },
 });
 

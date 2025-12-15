@@ -1,7 +1,7 @@
 /**
- * WORKB Mobile - Notices Screen
- * Company announcements and notifications
- * Admin: Can create/edit/pin notices
+ * WORKB Mobile - Board Screen (게시판)
+ * Company board posts (어드민 Board 모델과 연동)
+ * Admin: Can create/edit/pin posts
  * Staff: View only
  */
 
@@ -212,33 +212,33 @@ const NoticesScreen: React.FC = () => {
   const renderNoticeItem = (notice: Notice) => (
     <TouchableOpacity
       key={notice.id}
-      style={[styles.noticeCard, !notice.isRead && styles.unreadCard]}
+      style={styles.noticeCard}
       onPress={() => handleNoticePress(notice)}
       activeOpacity={0.7}
     >
       <View style={styles.noticeHeader}>
         <View style={styles.noticeMeta}>
-          {notice.isPinned && (
-            <Icon name="pin" size={14} color={Colors.primary} style={styles.pinIcon} />
+          {isAdmin ? (
+            <TouchableOpacity onPress={() => handleTogglePin(notice.id)}>
+              <Icon
+                name={notice.isPinned ? 'pin' : 'pin-outline'}
+                size={14}
+                color={notice.isPinned ? Colors.primary : Colors.textMuted}
+                style={styles.pinIcon}
+              />
+            </TouchableOpacity>
+          ) : (
+            notice.isPinned && (
+              <Icon name="pin" size={14} color={Colors.primary} style={styles.pinIcon} />
+            )
           )}
-          {!notice.isRead && <View style={styles.unreadDot} />}
           <Text style={styles.noticeAuthor}>{notice.author}</Text>
           <Text style={styles.noticeSeparator}>·</Text>
           <Text style={styles.noticeDate}>{formatDate(notice.createdAt)}</Text>
         </View>
-        {/* 관리자: 고정 버튼 */}
-        {isAdmin && (
-          <TouchableOpacity
-            style={styles.pinButton}
-            onPress={() => handleTogglePin(notice.id)}
-          >
-            <Icon
-              name={notice.isPinned ? 'pin' : 'pin-outline'}
-              size={18}
-              color={notice.isPinned ? Colors.primary : Colors.textMuted}
-            />
-          </TouchableOpacity>
-        )}
+        <Text style={[styles.readStatus, notice.isRead && styles.readStatusRead]}>
+          {notice.isRead ? '읽음' : '안읽음'}
+        </Text>
       </View>
 
       <Text style={styles.noticeTitle} numberOfLines={2}>
@@ -261,7 +261,7 @@ const NoticesScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>공지사항</Text>
+          <Text style={styles.headerTitle}>게시판</Text>
           {unreadCount > 0 && (
             <TouchableOpacity
               style={styles.markAllButton}
@@ -277,7 +277,7 @@ const NoticesScreen: React.FC = () => {
           <View style={styles.unreadBanner}>
             <Icon name="mail-unread-outline" size={18} color={Colors.primary} />
             <Text style={styles.unreadText}>
-              읽지 않은 공지 {unreadCount}개
+              읽지 않은 글 {unreadCount}개
             </Text>
           </View>
         )}
@@ -291,7 +291,7 @@ const NoticesScreen: React.FC = () => {
                 size={48}
                 color={Colors.textMuted}
               />
-              <Text style={styles.emptyText}>공지사항이 없습니다</Text>
+              <Text style={styles.emptyText}>게시글이 없습니다</Text>
             </View>
           ) : (
             <View style={styles.noticesList}>
@@ -312,7 +312,7 @@ const NoticesScreen: React.FC = () => {
         </TouchableOpacity>
       )}
 
-      {/* 공지 작성 모달 */}
+      {/* 글 작성 모달 */}
       <Modal
         visible={showCreateModal}
         transparent
@@ -322,7 +322,7 @@ const NoticesScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>새 공지사항</Text>
+              <Text style={styles.modalTitle}>새 글 작성</Text>
               <TouchableOpacity onPress={() => setShowCreateModal(false)}>
                 <Icon name="close" size={24} color={Colors.text} />
               </TouchableOpacity>
@@ -429,10 +429,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  unreadCard: {
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-  },
   noticeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -444,18 +440,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  pinButton: {
-    padding: Spacing.xs,
-  },
   pinIcon: {
     marginRight: Spacing.xs,
-  },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-    marginRight: Spacing.sm,
   },
   noticeAuthor: {
     ...Typography.small,
@@ -474,6 +460,14 @@ const styles = StyleSheet.create({
     ...Typography.bodyBold,
     color: Colors.text,
     marginBottom: Spacing.sm,
+  },
+  readStatus: {
+    ...Typography.small,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  readStatusRead: {
+    color: Colors.textMuted,
   },
   noticePreview: {
     ...Typography.caption,

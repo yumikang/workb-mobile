@@ -86,10 +86,10 @@ const MainTabNavigator: React.FC = () => {
           name="Notices"
           component={NoticesScreen}
           options={{
-            tabBarLabel: '공지',
+            tabBarLabel: '게시판',
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
-                name={focused ? 'notifications' : 'notifications-outline'}
+                name={focused ? 'document-text' : 'document-text-outline'}
                 focused={focused}
                 badge={unreadCount}
               />
