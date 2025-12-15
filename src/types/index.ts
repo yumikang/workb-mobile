@@ -26,7 +26,7 @@ export interface User {
   id: string;
   email: string;
   displayName: string;
-  role: 'owner' | 'admin' | 'member' | 'guest';
+  role: 'owner' | 'admin' | 'leader' | 'member' | 'guest';
   photoURL?: string;
   workspaceId?: string;
   teamId?: string;
@@ -78,6 +78,7 @@ export interface Notice {
   authorId: string;
   isPinned: boolean;
   isNew: boolean;
+  isRead?: boolean;
   createdAt: Date;
   workspaceId: string;
 }
