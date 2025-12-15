@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
-  FlatList,
   Modal,
   TextInput,
   Alert,
@@ -25,8 +24,14 @@ import { LeaveRequest, LeaveStatus } from '../../types';
 type LeaveTypeOption = 'annual' | 'half_am' | 'half_pm';
 
 const LeaveScreen: React.FC = () => {
-  const { requests, balance, isLoading, fetchLeaveData, setupRealtimeListeners, cleanupListeners } = useLeaveStore();
+  const { requests, balance, fetchLeaveData, setupRealtimeListeners, cleanupListeners } = useLeaveStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  // 연도 선택
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [showYearPicker, setShowYearPicker] = useState(false);
+  const availableYears = [currentYear, currentYear - 1, currentYear - 2];
 
   // 휴가 신청 모달 상태
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -68,7 +73,6 @@ const LeaveScreen: React.FC = () => {
   };
 
   const handleSubmitRequest = () => {
-    // 유효성 검사
     if (!startDate) {
       Alert.alert('알림', '시작일을 입력해주세요.');
       return;
@@ -79,7 +83,6 @@ const LeaveScreen: React.FC = () => {
       return;
     }
 
-    // DEV: 신청 성공 처리 (실제로는 API 호출)
     Alert.alert(
       '휴가 신청 완료',
       `${getLeaveTypeText(selectedLeaveType)} 신청이 완료되었습니다.\n승인 대기 중입니다.`,
@@ -88,7 +91,6 @@ const LeaveScreen: React.FC = () => {
           text: '확인',
           onPress: () => {
             handleCloseRequestModal();
-            // DEV: 새로고침
             fetchLeaveData();
           },
         },
@@ -133,14 +135,10 @@ const LeaveScreen: React.FC = () => {
     switch (type) {
       case 'annual':
         return '연차';
-      case 'sick':
-        return '병가';
       case 'half_am':
         return '오전 반차';
       case 'half_pm':
         return '오후 반차';
-      case 'personal':
-        return '개인 휴가';
       default:
         return type;
     }
@@ -152,6 +150,12 @@ const LeaveScreen: React.FC = () => {
       day: 'numeric',
     });
   };
+
+  // 선택된 연도의 휴가 내역 필터링
+  const filteredRequests = requests.filter((req) => {
+    const reqYear = req.startDate.getFullYear();
+    return reqYear === selectedYear;
+  });
 
   const renderLeaveItem = ({ item }: { item: LeaveRequest }) => (
     <View style={styles.leaveCard}>
@@ -209,67 +213,55 @@ const LeaveScreen: React.FC = () => {
           <Text style={styles.headerTitle}>휴가 관리</Text>
         </View>
 
-        {/* Balance Cards */}
-        <View style={styles.balanceSection}>
-          <View style={styles.balanceCard}>
-            <View style={styles.balanceIcon}>
-              <Icon name="sunny-outline" size={24} color={Colors.primary} />
-            </View>
-            <View style={styles.balanceInfo}>
-              <Text style={styles.balanceLabel}>연차</Text>
-              <Text style={styles.balanceValue}>
-                {balance?.annual.remaining ?? 0}
-                <Text style={styles.balanceTotal}>
-                  /{balance?.annual.total ?? 0}일
-                </Text>
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.balanceCard}>
-            <View style={[styles.balanceIcon, { backgroundColor: Colors.warning + '20' }]}>
-              <Icon name="medkit-outline" size={24} color={Colors.warning} />
-            </View>
-            <View style={styles.balanceInfo}>
-              <Text style={styles.balanceLabel}>병가</Text>
-              <Text style={styles.balanceValue}>
-                {balance?.sick.remaining ?? 0}
-                <Text style={styles.balanceTotal}>
-                  /{balance?.sick.total ?? 0}일
-                </Text>
-              </Text>
-            </View>
-          </View>
+        {/* Year Selector */}
+        <View style={styles.yearSelectorSection}>
+          <TouchableOpacity
+            style={styles.yearSelector}
+            onPress={() => setShowYearPicker(true)}
+          >
+            <Text style={styles.yearText}>{selectedYear}</Text>
+            <Icon name="chevron-down" size={18} color={Colors.text} />
+          </TouchableOpacity>
         </View>
 
-        {/* Request Button */}
-        <View style={styles.actionSection}>
+        {/* Annual Leave Card */}
+        <View style={styles.leaveBalanceCard}>
+          <View style={styles.leaveBalanceLeft}>
+            <View style={styles.leaveBalanceHeader}>
+              <View style={styles.leaveBalanceDot} />
+              <Text style={styles.leaveBalanceTitle}>연차휴가</Text>
+            </View>
+            <Text style={styles.leaveBalanceDays}>
+              {balance?.annual.remaining ?? 0}일
+            </Text>
+            <Text style={styles.leaveBalanceStatus}>신청 가능</Text>
+          </View>
           <TouchableOpacity
-            style={styles.requestButton}
-            activeOpacity={0.8}
+            style={styles.applyButton}
             onPress={handleOpenRequestModal}
           >
-            <Icon name="add-circle-outline" size={20} color={Colors.surface} />
-            <Text style={styles.requestButtonText}>휴가 신청</Text>
+            <Text style={styles.applyButtonText}>신청</Text>
           </TouchableOpacity>
         </View>
 
         {/* Request History */}
         <View style={styles.historySection}>
-          <Text style={styles.sectionTitle}>신청 내역</Text>
+          <Text style={styles.sectionTitle}>{selectedYear}년 신청 내역</Text>
 
-          {requests.length === 0 ? (
+          {filteredRequests.length === 0 ? (
             <View style={styles.emptyState}>
               <Icon
                 name="document-outline"
                 size={48}
                 color={Colors.textMuted}
               />
-              <Text style={styles.emptyText}>신청 내역이 없습니다</Text>
+              <Text style={styles.emptyText}>
+                {selectedYear}년 신청 내역이 없습니다
+              </Text>
             </View>
           ) : (
             <View style={styles.requestList}>
-              {requests.map((item) => (
+              {filteredRequests.map((item) => (
                 <View key={item.id}>
                   {renderLeaveItem({ item })}
                 </View>
@@ -278,6 +270,45 @@ const LeaveScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* Year Picker Modal */}
+      <Modal
+        visible={showYearPicker}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowYearPicker(false)}
+      >
+        <TouchableOpacity
+          style={styles.yearPickerOverlay}
+          activeOpacity={1}
+          onPress={() => setShowYearPicker(false)}
+        >
+          <View style={styles.yearPickerContent}>
+            {availableYears.map((year) => (
+              <TouchableOpacity
+                key={year}
+                style={[
+                  styles.yearPickerItem,
+                  selectedYear === year && styles.yearPickerItemSelected,
+                ]}
+                onPress={() => {
+                  setSelectedYear(year);
+                  setShowYearPicker(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.yearPickerItemText,
+                    selectedYear === year && styles.yearPickerItemTextSelected,
+                  ]}
+                >
+                  {year}년
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* 휴가 신청 모달 */}
       <Modal
@@ -288,7 +319,6 @@ const LeaveScreen: React.FC = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* 모달 헤더 */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>휴가 신청</Text>
               <TouchableOpacity onPress={handleCloseRequestModal}>
@@ -296,7 +326,6 @@ const LeaveScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {/* 휴가 유형 선택 */}
             <View style={styles.formSection}>
               <Text style={styles.formLabel}>휴가 유형</Text>
               <View style={styles.leaveTypeSelector}>
@@ -322,7 +351,6 @@ const LeaveScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* 날짜 입력 */}
             <View style={styles.formSection}>
               <Text style={styles.formLabel}>
                 {selectedLeaveType === 'annual' ? '시작일' : '날짜'}
@@ -351,7 +379,6 @@ const LeaveScreen: React.FC = () => {
               </View>
             )}
 
-            {/* 사유 입력 */}
             <View style={styles.formSection}>
               <Text style={styles.formLabel}>사유 (선택)</Text>
               <TextInput
@@ -366,7 +393,6 @@ const LeaveScreen: React.FC = () => {
               />
             </View>
 
-            {/* 제출 버튼 */}
             <TouchableOpacity
               style={styles.submitButton}
               activeOpacity={0.8}
@@ -397,62 +423,68 @@ const styles = StyleSheet.create({
     ...Typography.heading2,
     color: Colors.text,
   },
-  balanceSection: {
-    flexDirection: 'row',
+  yearSelectorSection: {
     paddingHorizontal: Spacing.xl,
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
-  balanceCard: {
-    flex: 1,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+  yearSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    gap: Spacing.xs,
   },
-  balanceIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primary + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  balanceInfo: {},
-  balanceLabel: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-  },
-  balanceValue: {
-    ...Typography.heading3,
+  yearText: {
+    ...Typography.bodyBold,
     color: Colors.text,
   },
-  balanceTotal: {
-    ...Typography.body,
-    color: Colors.textSecondary,
-    fontWeight: '400',
-  },
-  actionSection: {
-    paddingHorizontal: Spacing.xl,
+  // Annual Leave Balance Card
+  leaveBalanceCard: {
+    marginHorizontal: Spacing.xl,
     marginBottom: Spacing.xl,
+    backgroundColor: Colors.primaryLight + '30',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  requestButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.lg,
+  leaveBalanceLeft: {},
+  leaveBalanceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: Spacing.sm,
+    marginBottom: Spacing.sm,
   },
-  requestButtonText: {
-    ...Typography.button,
-    color: Colors.surface,
+  leaveBalanceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
   },
+  leaveBalanceTitle: {
+    ...Typography.body,
+    color: Colors.text,
+  },
+  leaveBalanceDays: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  leaveBalanceStatus: {
+    ...Typography.caption,
+    color: Colors.primary,
+  },
+  applyButton: {
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  applyButtonText: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+  },
+  // History Section
   historySection: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.xxl,
@@ -524,7 +556,37 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginTop: Spacing.md,
   },
-  // 모달 스타일
+  // Year Picker Modal
+  yearPickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  yearPickerContent: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    minWidth: 200,
+  },
+  yearPickerItem: {
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+  },
+  yearPickerItemSelected: {
+    backgroundColor: Colors.primaryLight + '30',
+  },
+  yearPickerItemText: {
+    ...Typography.body,
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  yearPickerItemTextSelected: {
+    ...Typography.bodyBold,
+    color: Colors.primary,
+  },
+  // Request Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
