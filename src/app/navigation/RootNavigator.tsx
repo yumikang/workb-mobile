@@ -14,6 +14,7 @@ import LoginScreen from '../screens/LoginScreen';
 import MainTabNavigator from './MainTabNavigator';
 import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import NoticeDetailScreen from '../screens/NoticeDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -48,6 +49,13 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="NoticeDetail"
+        component={NoticeDetailScreen}
         options={{
           animation: 'slide_from_right',
         }}

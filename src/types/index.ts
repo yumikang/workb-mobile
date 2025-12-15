@@ -8,7 +8,14 @@ export type RootStackParamList = {
   Login: undefined;
   MainTabs: undefined;
   LeaveRequest: undefined;
-  NoticeDetail: { noticeId: string };
+  NoticeDetail: {
+    noticeId: string;
+    title: string;
+    content: string;
+    author: string;
+    createdAt: string;
+    isPinned: boolean;
+  };
   Settings: undefined;
   Profile: undefined;
   AttendanceHistory: undefined;

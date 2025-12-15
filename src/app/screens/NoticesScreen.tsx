@@ -18,10 +18,14 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useNoticesStore, useAuthStore } from '../../stores';
-import { Notice } from '../../types';
+import { Notice, RootStackParamList } from '../../types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // DEV 모드 목 데이터
 const mockNotices: Notice[] = [
@@ -64,6 +68,7 @@ const mockNotices: Notice[] = [
 ];
 
 const NoticesScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const {
     notices: storeNotices,
     unreadCount,
@@ -116,7 +121,15 @@ const NoticesScreen: React.FC = () => {
         await markAsRead(notice.id);
       }
     }
-    // TODO: Navigate to notice detail
+    // 상세 페이지로 이동
+    navigation.navigate('NoticeDetail', {
+      noticeId: notice.id,
+      title: notice.title,
+      content: notice.content,
+      author: notice.author,
+      createdAt: notice.createdAt.toISOString(),
+      isPinned: notice.isPinned,
+    });
   };
 
   // 공지 고정/해제 토글 (관리자 전용)
