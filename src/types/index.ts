@@ -10,6 +10,8 @@ export type RootStackParamList = {
   LeaveRequest: undefined;
   NoticeDetail: { noticeId: string };
   Settings: undefined;
+  Profile: undefined;
+  AttendanceHistory: undefined;
 };
 
 export type MainTabParamList = {
