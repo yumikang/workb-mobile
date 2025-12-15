@@ -19,6 +19,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Profile: undefined;
   AttendanceHistory: undefined;
+  AttendanceCorrection: undefined;
 };
 
 export type MainTabParamList = {
@@ -122,3 +123,24 @@ export interface FCMNotificationData {
 
 // Notice Category Type
 export type NoticeCategory = 'general' | 'urgent' | 'hr' | 'event' | 'policy';
+
+// Attendance Correction Types
+export type CorrectionType = 'check_in' | 'check_out' | 'both';
+export type CorrectionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface AttendanceCorrectionRequest {
+  id: string;
+  userId: string;
+  date: string;
+  correctionType: CorrectionType;
+  originalCheckIn?: Date;
+  originalCheckOut?: Date;
+  requestedCheckIn?: Date;
+  requestedCheckOut?: Date;
+  reason: string;
+  status: CorrectionStatus;
+  createdAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  rejectReason?: string;
+}

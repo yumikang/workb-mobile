@@ -15,6 +15,8 @@ import MainTabNavigator from './MainTabNavigator';
 import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import NoticeDetailScreen from '../screens/NoticeDetailScreen';
+import AttendanceHistoryScreen from '../screens/AttendanceHistoryScreen';
+import AttendanceCorrectionScreen from '../screens/AttendanceCorrectionScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -56,6 +58,20 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen
         name="NoticeDetail"
         component={NoticeDetailScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="AttendanceHistory"
+        component={AttendanceHistoryScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="AttendanceCorrection"
+        component={AttendanceCorrectionScreen}
         options={{
           animation: 'slide_from_right',
         }}

@@ -14,10 +14,15 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useAuthStore } from '../../stores';
 import { FCMService } from '../../services';
+import { RootStackParamList } from '../../types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface SettingItemProps {
   icon: string;
@@ -67,6 +72,7 @@ const SettingItem: React.FC<SettingItemProps> = ({
 );
 
 const SettingsScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
   const { user, logout } = useAuthStore();
   const [pushEnabled, setPushEnabled] = useState(true);
 
@@ -102,7 +108,11 @@ const SettingsScreen: React.FC = () => {
         </View>
 
         {/* Profile Section */}
-        <View style={styles.profileSection}>
+        <TouchableOpacity
+          style={styles.profileSection}
+          onPress={() => navigation.navigate('Profile')}
+          activeOpacity={0.7}
+        >
           <View style={styles.avatarPlaceholder}>
             <Icon name="person" size={32} color={Colors.textSecondary} />
           </View>
@@ -113,7 +123,8 @@ const SettingsScreen: React.FC = () => {
               {user?.department || '부서 미지정'}
             </Text>
           </View>
-        </View>
+          <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
+        </TouchableOpacity>
 
         {/* Notifications Section */}
         <View style={styles.section}>
@@ -143,13 +154,13 @@ const SettingsScreen: React.FC = () => {
               icon="time-outline"
               title="근무 기록"
               subtitle="이번 달 출퇴근 기록 확인"
-              onPress={() => {}}
+              onPress={() => navigation.navigate('AttendanceHistory')}
             />
             <SettingItem
-              icon="stats-chart-outline"
-              title="근무 통계"
-              subtitle="근무 시간 및 패턴 분석"
-              onPress={() => {}}
+              icon="create-outline"
+              title="근태 정정 요청"
+              subtitle="출퇴근 시간 수정 요청"
+              onPress={() => navigation.navigate('AttendanceCorrection')}
             />
           </View>
         </View>
