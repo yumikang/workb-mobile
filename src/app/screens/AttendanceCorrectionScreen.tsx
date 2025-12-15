@@ -414,6 +414,15 @@ const AttendanceCorrectionScreen: React.FC = () => {
                 numberOfLines={4}
                 textAlignVertical="top"
               />
+
+              {/* 증빙 첨부 (UI only) */}
+              <TouchableOpacity
+                style={styles.attachButton}
+                onPress={() => Alert.alert('알림', '증빙 첨부 기능은 추후 업데이트 예정입니다.')}
+              >
+                <Icon name="attach-outline" size={20} color={Colors.textSecondary} />
+                <Text style={styles.attachButtonText}>증빙 첨부하기</Text>
+              </TouchableOpacity>
             </ScrollView>
 
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
@@ -680,6 +689,17 @@ const styles = StyleSheet.create({
   typeOptionTextActive: {
     color: Colors.surface,
     fontWeight: '600',
+  },
+  attachButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  attachButtonText: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
   },
   submitButton: {
     backgroundColor: Colors.primary,

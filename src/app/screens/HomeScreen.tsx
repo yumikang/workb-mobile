@@ -191,12 +191,21 @@ const HomeScreen: React.FC = () => {
         <View style={styles.mainArea}>
           {/* Current Time */}
           <View style={styles.timeDisplay}>
-            <Text style={styles.currentTime}>
-              {currentTime.toLocaleTimeString('ko-KR', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
+            <View style={styles.timeRow}>
+              <View style={styles.timePeriodBadge}>
+                <Text style={styles.timePeriodText}>
+                  {currentTime.getHours() < 12 ? '오전' : '오후'}
+                </Text>
+              </View>
+              <Text style={styles.currentTime}>
+                {currentTime.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: false,
+                })}
+              </Text>
+            </View>
             <Text style={styles.currentDate}>
               {currentTime.toLocaleDateString('ko-KR', {
                 weekday: 'long',
@@ -460,11 +469,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.xxl,
   },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.sm,
+  },
+  timePeriodBadge: {
+    backgroundColor: Colors.primary + '15',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.md,
+  },
+  timePeriodText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
   currentTime: {
-    fontSize: 56,
-    fontWeight: '900',
+    fontSize: 48,
+    fontWeight: '700',
     color: Colors.text,
-    letterSpacing: -2,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -1,
   },
   currentDate: {
     ...Typography.body,
