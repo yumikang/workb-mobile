@@ -12,6 +12,12 @@ import { AnalyticsService } from '@/services/AnalyticsService';
 import { STORAGE_KEYS } from '@/constants';
 import { User } from '@/types';
 
+interface UpdateProfileData {
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+}
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -25,6 +31,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -193,6 +200,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Persist updated user info
       AsyncStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(updatedUser));
+    }
+  },
+
+  updateProfile: async (data: UpdateProfileData) => {
+    const currentUser = get().user;
+    if (!currentUser) {
+      throw new Error('User not logged in');
+    }
+
+    try {
+      // TODO: 서버 API 연동 시 주석 해제
+      // const response = await api.put('/users/profile', data);
+      // const updatedUser = response.data.user;
+
+      // 로컬 상태 업데이트 (서버 연동 전 임시)
+      const updatedUser: User = {
+        ...currentUser,
+        displayName: data.displayName ?? currentUser.displayName,
+        email: data.email ?? currentUser.email,
+        photoURL: data.photoURL ?? currentUser.photoURL,
+      };
+
+      set({ user: updatedUser });
+
+      // Persist updated user info
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(updatedUser));
+
+      console.log('[Auth] Profile updated:', updatedUser.displayName);
+    } catch (error: any) {
+      console.error('[Auth] Profile update failed:', error.message);
+      throw error;
     }
   },
 

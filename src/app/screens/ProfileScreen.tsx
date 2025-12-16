@@ -1,6 +1,6 @@
 /**
  * WORKB Mobile - Profile Screen
- * User profile info and attendance history
+ * User profile info and attendance history with edit functionality
  */
 
 import React, { useState } from 'react';
@@ -10,11 +10,18 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Modal,
+  TextInput,
+  Alert,
+  Image,
+  ActionSheetIOS,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary, launchCamera, Asset } from 'react-native-image-picker';
 import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useAuthStore, useAttendanceStore } from '../../stores';
 import { RootStackParamList } from '../../types';
@@ -51,9 +58,16 @@ const mockAttendanceHistory = [
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateProfile } = useAuthStore();
   const { status, startTime } = useAttendanceStore();
   const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState(user?.displayName || '');
+  const [editEmail, setEditEmail] = useState(user?.email || '');
+  const [editPhotoUri, setEditPhotoUri] = useState<string | null>(user?.photoURL || null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('ko-KR', {
@@ -87,6 +101,98 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
+  const openEditModal = () => {
+    setEditName(user?.displayName || '');
+    setEditEmail(user?.email || '');
+    setEditPhotoUri(user?.photoURL || null);
+    setShowEditModal(true);
+  };
+
+  const handleImagePicker = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['취소', '사진 촬영', '앨범에서 선택'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            openCamera();
+          } else if (buttonIndex === 2) {
+            openGallery();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        '프로필 사진',
+        '사진을 선택하세요',
+        [
+          { text: '취소', style: 'cancel' },
+          { text: '사진 촬영', onPress: openCamera },
+          { text: '앨범에서 선택', onPress: openGallery },
+        ]
+      );
+    }
+  };
+
+  const openCamera = async () => {
+    const result = await launchCamera({
+      mediaType: 'photo',
+      maxWidth: 500,
+      maxHeight: 500,
+      quality: 0.8,
+    });
+
+    if (result.assets && result.assets[0]?.uri) {
+      setEditPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const openGallery = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      maxWidth: 500,
+      maxHeight: 500,
+      quality: 0.8,
+    });
+
+    if (result.assets && result.assets[0]?.uri) {
+      setEditPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert('오류', '이름을 입력해주세요');
+      return;
+    }
+
+    if (!editEmail.trim() || !editEmail.includes('@')) {
+      Alert.alert('오류', '올바른 이메일을 입력해주세요');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // updateProfile이 존재하면 호출, 없으면 로컬 상태만 업데이트
+      if (updateProfile) {
+        await updateProfile({
+          displayName: editName.trim(),
+          email: editEmail.trim(),
+          photoURL: editPhotoUri || undefined,
+        });
+      }
+      setShowEditModal(false);
+      Alert.alert('완료', '프로필이 수정되었습니다');
+    } catch (error) {
+      Alert.alert('오류', '프로필 수정에 실패했습니다');
+      console.error('Profile update failed:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
@@ -98,19 +204,24 @@ const ProfileScreen: React.FC = () => {
           <Icon name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>내 프로필</Text>
-        <View style={styles.headerRight} />
+        <TouchableOpacity style={styles.editButton} onPress={openEditModal}>
+          <Icon name="create-outline" size={24} color={Colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <View style={styles.avatarLarge}>
+          <TouchableOpacity style={styles.avatarLarge} onPress={openEditModal}>
             {user?.photoURL ? (
-              <View style={styles.avatarImage} />
+              <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
             ) : (
               <Icon name="person" size={48} color={Colors.textSecondary} />
             )}
-          </View>
+            <View style={styles.avatarEditBadge}>
+              <Icon name="camera" size={14} color={Colors.surface} />
+            </View>
+          </TouchableOpacity>
           <Text style={styles.userName}>{user?.displayName || '사용자'}</Text>
           <Text style={styles.userEmail}>{user?.email || ''}</Text>
           <View style={styles.userBadge}>
@@ -185,7 +296,12 @@ const ProfileScreen: React.FC = () => {
 
             {/* User Info */}
             <View style={styles.infoCard}>
-              <Text style={styles.infoCardTitle}>기본 정보</Text>
+              <View style={styles.infoCardHeader}>
+                <Text style={styles.infoCardTitle}>기본 정보</Text>
+                <TouchableOpacity onPress={openEditModal}>
+                  <Text style={styles.editLinkText}>수정</Text>
+                </TouchableOpacity>
+              </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>이름</Text>
                 <Text style={styles.infoValue}>
@@ -196,15 +312,15 @@ const ProfileScreen: React.FC = () => {
                 <Text style={styles.infoLabel}>이메일</Text>
                 <Text style={styles.infoValue}>{user?.email || '-'}</Text>
               </View>
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, styles.infoRowDisabled]}>
                 <Text style={styles.infoLabel}>부서</Text>
-                <Text style={styles.infoValue}>
+                <Text style={styles.infoValueDisabled}>
                   {user?.department || '미지정'}
                 </Text>
               </View>
-              <View style={styles.infoRow}>
+              <View style={[styles.infoRow, styles.infoRowDisabled, { borderBottomWidth: 0 }]}>
                 <Text style={styles.infoLabel}>권한</Text>
-                <Text style={styles.infoValue}>
+                <Text style={styles.infoValueDisabled}>
                   {user?.role === 'admin'
                     ? '관리자'
                     : user?.role === 'leader'
@@ -304,6 +420,102 @@ const ProfileScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        visible={showEditModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowEditModal(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          {/* Modal Header */}
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowEditModal(false)}>
+              <Text style={styles.modalCancelText}>취소</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>프로필 수정</Text>
+            <TouchableOpacity onPress={handleSaveProfile} disabled={isSaving}>
+              <Text style={[styles.modalSaveText, isSaving && styles.modalSaveTextDisabled]}>
+                {isSaving ? '저장 중...' : '저장'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {/* Profile Image Edit */}
+            <View style={styles.modalAvatarSection}>
+              <TouchableOpacity style={styles.modalAvatar} onPress={handleImagePicker}>
+                {editPhotoUri ? (
+                  <Image source={{ uri: editPhotoUri }} style={styles.modalAvatarImage} />
+                ) : (
+                  <Icon name="person" size={48} color={Colors.textSecondary} />
+                )}
+                <View style={styles.modalAvatarEditBadge}>
+                  <Icon name="camera" size={16} color={Colors.surface} />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleImagePicker}>
+                <Text style={styles.changePhotoText}>사진 변경</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Edit Form */}
+            <View style={styles.formSection}>
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>이름</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="이름을 입력하세요"
+                  placeholderTextColor={Colors.textMuted}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>이메일</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={editEmail}
+                  onChangeText={setEditEmail}
+                  placeholder="이메일을 입력하세요"
+                  placeholderTextColor={Colors.textMuted}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* Read-only fields */}
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>부서</Text>
+                <View style={styles.formInputDisabled}>
+                  <Text style={styles.formInputDisabledText}>
+                    {user?.department || '미지정'}
+                  </Text>
+                  <Icon name="lock-closed" size={16} color={Colors.textMuted} />
+                </View>
+                <Text style={styles.formHint}>부서는 관리자만 변경할 수 있습니다</Text>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.formLabel}>권한</Text>
+                <View style={styles.formInputDisabled}>
+                  <Text style={styles.formInputDisabledText}>
+                    {user?.role === 'admin'
+                      ? '관리자'
+                      : user?.role === 'leader'
+                      ? '리더'
+                      : '직원'}
+                  </Text>
+                  <Icon name="lock-closed" size={16} color={Colors.textMuted} />
+                </View>
+                <Text style={styles.formHint}>권한은 관리자만 변경할 수 있습니다</Text>
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -330,8 +542,8 @@ const styles = StyleSheet.create({
     ...Typography.heading3,
     color: Colors.text,
   },
-  headerRight: {
-    width: 32,
+  editButton: {
+    padding: Spacing.xs,
   },
   scrollView: {
     flex: 1,
@@ -354,6 +566,19 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.surface,
   },
   userName: {
     ...Typography.heading2,
@@ -412,10 +637,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  infoCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
   infoCardTitle: {
     ...Typography.bodyBold,
     color: Colors.text,
     marginBottom: Spacing.md,
+  },
+  editLinkText: {
+    ...Typography.body,
+    color: Colors.primary,
   },
   statusRow: {
     flexDirection: 'row',
@@ -443,6 +678,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
   },
+  infoRowDisabled: {
+    opacity: 0.6,
+  },
   infoLabel: {
     ...Typography.body,
     color: Colors.textSecondary,
@@ -450,6 +688,10 @@ const styles = StyleSheet.create({
   infoValue: {
     ...Typography.body,
     color: Colors.text,
+  },
+  infoValueDisabled: {
+    ...Typography.body,
+    color: Colors.textMuted,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -562,6 +804,113 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textMuted,
     marginLeft: 'auto',
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  modalCancelText: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+  },
+  modalTitle: {
+    ...Typography.heading3,
+    color: Colors.text,
+  },
+  modalSaveText: {
+    ...Typography.bodyBold,
+    color: Colors.primary,
+  },
+  modalSaveTextDisabled: {
+    color: Colors.textMuted,
+  },
+  modalContent: {
+    flex: 1,
+  },
+  modalAvatarSection: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+    backgroundColor: Colors.surface,
+  },
+  modalAvatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  modalAvatarImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  modalAvatarEditBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: Colors.surface,
+  },
+  changePhotoText: {
+    ...Typography.body,
+    color: Colors.primary,
+  },
+  formSection: {
+    padding: Spacing.lg,
+    gap: Spacing.lg,
+  },
+  formGroup: {},
+  formLabel: {
+    ...Typography.bodyBold,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  formInput: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Typography.body,
+    color: Colors.text,
+  },
+  formInputDisabled: {
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  formInputDisabledText: {
+    ...Typography.body,
+    color: Colors.textMuted,
+  },
+  formHint: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    marginTop: Spacing.xs,
   },
 });
 
