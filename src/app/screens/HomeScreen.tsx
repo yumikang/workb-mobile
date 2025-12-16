@@ -22,6 +22,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useAuthStore, useAttendanceStore } from '../../stores';
 import { RootStackParamList } from '../../types';
+import { locationService, LocationStatus, WifiStatus } from '../../services';
 
 type ViewMode = 'leader' | 'staff';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -44,11 +45,36 @@ const HomeScreen: React.FC = () => {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
 
+  // Location & Wi-Fi status
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('unknown');
+  const [wifiStatus, setWifiStatus] = useState<WifiStatus>('unknown');
+
   // TODO: Replace with actual unread notice count from store/API
   const unreadNoticeCount = 2;
 
   // 관리자 권한 확인 (admin 또는 leader 역할)
   const isAdmin = user?.role === 'admin' || user?.role === 'leader';
+
+  // Initialize location service and subscribe to changes
+  useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+
+    const initLocation = async () => {
+      await locationService.initialize();
+      unsubscribe = locationService.addListener((state) => {
+        setLocationStatus(state.locationStatus);
+        setWifiStatus(state.wifiStatus);
+      });
+    };
+
+    initLocation();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     fetchStatus();
@@ -58,9 +84,47 @@ const HomeScreen: React.FC = () => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchStatus();
+    await Promise.all([
+      fetchStatus(),
+      locationService.refresh(),
+    ]);
     setRefreshing(false);
   }, []);
+
+  // Helper functions for badge display
+  const getLocationText = () => {
+    switch (locationStatus) {
+      case 'office': return '사무실';
+      case 'remote': return '외부';
+      case 'denied': return '권한필요';
+      default: return '확인중';
+    }
+  };
+
+  const getWifiText = () => {
+    switch (wifiStatus) {
+      case 'connected': return '연결됨';
+      case 'disconnected': return '연결안됨';
+      default: return '확인중';
+    }
+  };
+
+  const getLocationColor = () => {
+    switch (locationStatus) {
+      case 'office': return Colors.success;
+      case 'remote': return Colors.warning;
+      case 'denied': return Colors.error;
+      default: return Colors.textSecondary;
+    }
+  };
+
+  const getWifiColor = () => {
+    switch (wifiStatus) {
+      case 'connected': return Colors.success;
+      case 'disconnected': return Colors.error;
+      default: return Colors.textSecondary;
+    }
+  };
 
   const handlePress = async () => {
     try {
@@ -179,12 +243,16 @@ const HomeScreen: React.FC = () => {
 
             <View style={styles.statusBadges}>
               <View style={styles.badge}>
-                <Icon name="location-outline" size={14} color={Colors.textSecondary} />
-                <Text style={styles.badgeText}>사무실</Text>
+                <Icon name="location-outline" size={14} color={getLocationColor()} />
+                <Text style={[styles.badgeText, { color: getLocationColor() }]}>
+                  {getLocationText()}
+                </Text>
               </View>
               <View style={styles.badge}>
-                <Icon name="wifi-outline" size={14} color={Colors.textSecondary} />
-                <Text style={styles.badgeText}>연결됨</Text>
+                <Icon name="wifi-outline" size={14} color={getWifiColor()} />
+                <Text style={[styles.badgeText, { color: getWifiColor() }]}>
+                  {getWifiText()}
+                </Text>
               </View>
               <TouchableOpacity
                 style={styles.badge}
