@@ -155,7 +155,7 @@ const HomeScreen: React.FC = () => {
                       viewMode === 'leader' && styles.modeToggleTextActive,
                     ]}
                   >
-                    리더
+                    관리자
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -471,7 +471,8 @@ const styles = StyleSheet.create({
   },
   statusBadges: {
     flexDirection: 'row',
-    gap: Spacing.md,
+    gap: Spacing.sm,
+    flexShrink: 1,
   },
   badge: {
     flexDirection: 'row',
@@ -503,7 +504,7 @@ const styles = StyleSheet.create({
   toggleAndBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
+    justifyContent: 'space-between',
   },
   mainArea: {
     alignItems: 'center',
