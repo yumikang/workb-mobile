@@ -17,6 +17,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import NoticeDetailScreen from '../screens/NoticeDetailScreen';
 import AttendanceHistoryScreen from '../screens/AttendanceHistoryScreen';
 import AttendanceCorrectionScreen from '../screens/AttendanceCorrectionScreen';
+import ApprovalManagementScreen from '../screens/ApprovalManagementScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -72,6 +73,13 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen
         name="AttendanceCorrection"
         component={AttendanceCorrectionScreen}
+        options={{
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="ApprovalManagement"
+        component={ApprovalManagementScreen}
         options={{
           animation: 'slide_from_right',
         }}

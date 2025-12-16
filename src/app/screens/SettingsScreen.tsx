@@ -1,6 +1,8 @@
 /**
  * WORKB Mobile - Settings Screen
  * App settings and user profile management
+ * 관리자(admin/hr/manager): 승인 관리 메뉴 추가
+ * 직원(employee): 기본 메뉴만 표시
  */
 
 import React, { useState } from 'react';
@@ -12,6 +14,8 @@ import {
   ScrollView,
   Switch,
   Alert,
+  Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -23,6 +27,12 @@ import { FCMService } from '../../services';
 import { RootStackParamList } from '../../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+// TODO: 실제 API에서 가져올 승인 대기 카운트
+const MOCK_PENDING_COUNTS = {
+  leave: 3,
+  correction: 2,
+};
 
 interface SettingItemProps {
   icon: string;
@@ -76,6 +86,9 @@ const SettingsScreen: React.FC = () => {
   const { user, logout } = useAuthStore();
   const [pushEnabled, setPushEnabled] = useState(true);
 
+  // 관리자 여부 체크 (admin, hr, manager = 관리자)
+  const isAdmin = user?.role && user.role !== 'employee';
+
   const handlePushToggle = async (value: boolean) => {
     setPushEnabled(value);
     if (value) {
@@ -125,6 +138,37 @@ const SettingsScreen: React.FC = () => {
           </View>
           <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
         </TouchableOpacity>
+
+        {/* Admin Section - 관리자만 표시 */}
+        {isAdmin && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>관리</Text>
+            <View style={styles.sectionContent}>
+              <SettingItem
+                icon="checkmark-circle-outline"
+                title="승인 관리"
+                subtitle={`휴가 ${MOCK_PENDING_COUNTS.leave}건, 근태정정 ${MOCK_PENDING_COUNTS.correction}건 대기중`}
+                onPress={() => navigation.navigate('ApprovalManagement')}
+                rightElement={
+                  <View style={styles.badgeContainer}>
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>
+                        {MOCK_PENDING_COUNTS.leave + MOCK_PENDING_COUNTS.correction}
+                      </Text>
+                    </View>
+                    <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
+                  </View>
+                }
+              />
+            </View>
+            <View style={styles.adminNotice}>
+              <Icon name="information-circle-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.adminNoticeText}>
+                상세 설정은 웹 관리자 페이지에서 관리하세요
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Notifications Section */}
         <View style={styles.section}>
@@ -317,6 +361,36 @@ const styles = StyleSheet.create({
     ...Typography.small,
     color: Colors.textMuted,
     marginTop: Spacing.xs,
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  badge: {
+    backgroundColor: Colors.error,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.sm,
+  },
+  badgeText: {
+    ...Typography.small,
+    color: Colors.surface,
+    fontWeight: '600',
+  },
+  adminNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginHorizontal: Spacing.xl,
+    marginTop: Spacing.sm,
+  },
+  adminNoticeText: {
+    ...Typography.small,
+    color: Colors.textSecondary,
   },
 });
 

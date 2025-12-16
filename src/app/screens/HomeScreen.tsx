@@ -354,61 +354,35 @@ const HomeScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Leader Mode: 관리자 전용 기능 */}
+        {/* Leader Mode: 관리자 전용 기능 - 승인 관리만 */}
         {viewMode === 'leader' && isAdmin && (
           <View style={styles.adminSection}>
             <Text style={styles.sectionTitle}>관리자 메뉴</Text>
 
-            {/* 휴가 승인 */}
-            <TouchableOpacity style={styles.adminCard}>
+            {/* 승인 관리 (휴가 + 근태정정) */}
+            <TouchableOpacity
+              style={styles.adminCard}
+              onPress={() => navigation.navigate('ApprovalManagement')}
+            >
               <View style={styles.adminCardIcon}>
-                <Icon name="calendar-outline" size={24} color={Colors.primary} />
+                <Icon name="checkmark-circle-outline" size={24} color={Colors.primary} />
               </View>
               <View style={styles.adminCardContent}>
-                <Text style={styles.adminCardTitle}>휴가 승인</Text>
-                <Text style={styles.adminCardSubtitle}>대기 중인 요청 3건</Text>
+                <Text style={styles.adminCardTitle}>승인 관리</Text>
+                <Text style={styles.adminCardSubtitle}>휴가 3건, 근태정정 2건 대기중</Text>
               </View>
               <View style={styles.adminCardBadge}>
-                <Text style={styles.adminCardBadgeText}>3</Text>
+                <Text style={styles.adminCardBadgeText}>5</Text>
               </View>
               <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
             </TouchableOpacity>
 
-            {/* 게시글 작성 */}
-            <TouchableOpacity style={styles.adminCard}>
-              <View style={styles.adminCardIcon}>
-                <Icon name="document-text-outline" size={24} color={Colors.warning} />
-              </View>
-              <View style={styles.adminCardContent}>
-                <Text style={styles.adminCardTitle}>게시글 작성</Text>
-                <Text style={styles.adminCardSubtitle}>새 게시글 등록</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
-            </TouchableOpacity>
-
-            {/* 팀원 근태 현황 */}
-            <TouchableOpacity style={styles.adminCard}>
-              <View style={styles.adminCardIcon}>
-                <Icon name="people-outline" size={24} color={Colors.secondary} />
-              </View>
-              <View style={styles.adminCardContent}>
-                <Text style={styles.adminCardTitle}>팀원 근태 현황</Text>
-                <Text style={styles.adminCardSubtitle}>출근 5명 / 총 8명</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
-            </TouchableOpacity>
-
-            {/* 근무 통계 */}
-            <TouchableOpacity style={styles.adminCard}>
-              <View style={styles.adminCardIcon}>
-                <Icon name="stats-chart-outline" size={24} color={Colors.accent} />
-              </View>
-              <View style={styles.adminCardContent}>
-                <Text style={styles.adminCardTitle}>근무 통계</Text>
-                <Text style={styles.adminCardSubtitle}>이번 주 리포트 보기</Text>
-              </View>
-              <Icon name="chevron-forward" size={20} color={Colors.textMuted} />
-            </TouchableOpacity>
+            <View style={styles.adminNotice}>
+              <Icon name="information-circle-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.adminNoticeText}>
+                상세 설정은 웹 관리자 페이지에서 관리하세요
+              </Text>
+            </View>
           </View>
         )}
 
@@ -812,6 +786,16 @@ const styles = StyleSheet.create({
     ...Typography.small,
     color: Colors.surface,
     fontWeight: '600',
+  },
+  adminNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  adminNoticeText: {
+    ...Typography.small,
+    color: Colors.textSecondary,
   },
   // Modal Styles
   modalOverlay: {

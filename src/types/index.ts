@@ -20,6 +20,7 @@ export type RootStackParamList = {
   Profile: undefined;
   AttendanceHistory: undefined;
   AttendanceCorrection: undefined;
+  ApprovalManagement: undefined;
 };
 
 export type MainTabParamList = {
