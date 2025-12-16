@@ -44,6 +44,9 @@ const HomeScreen: React.FC = () => {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
 
+  // TODO: Replace with actual unread notice count from store/API
+  const unreadNoticeCount = 2;
+
   // 관리자 권한 확인 (admin 또는 leader 역할)
   const isAdmin = user?.role === 'admin' || user?.role === 'leader';
 
@@ -183,6 +186,18 @@ const HomeScreen: React.FC = () => {
                 <Icon name="wifi-outline" size={14} color={Colors.textSecondary} />
                 <Text style={styles.badgeText}>연결됨</Text>
               </View>
+              <TouchableOpacity
+                style={styles.badge}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'Notices' })}
+              >
+                <Icon name="megaphone-outline" size={14} color={Colors.textSecondary} />
+                <Text style={styles.badgeText}>공지</Text>
+                {unreadNoticeCount > 0 && (
+                  <View style={styles.noticeBadge}>
+                    <Text style={styles.noticeBadgeText}>N</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -215,37 +230,52 @@ const HomeScreen: React.FC = () => {
             </Text>
           </View>
 
-          {/* Check In/Out Button */}
-          <TouchableOpacity
-            onPress={handlePress}
-            activeOpacity={0.8}
-            disabled={isLoading}
-            style={[
-              styles.actionButton,
-              status === 'working' ? styles.workingButton : styles.readyButton,
-            ]}
-          >
-            <View style={styles.actionButtonInner}>
-              {isLoading ? (
-                <Text style={styles.actionButtonText}>...</Text>
-              ) : (
-                <>
-                  <Text style={styles.actionButtonText}>
-                    {status === 'working' ? '퇴근하기' : '출근하기'}
-                  </Text>
-                  {status === 'working' && startTime ? (
-                    <Text style={styles.actionButtonStartTime}>
-                      {formatTime(startTime)}~
+          {/* Check In/Out Button - Nest Style */}
+          <View style={styles.buttonContainer}>
+            {/* Outer glow ring - only when working */}
+            {status === 'working' && (
+              <View style={styles.glowRing} />
+            )}
+            <TouchableOpacity
+              onPress={handlePress}
+              activeOpacity={0.9}
+              disabled={isLoading}
+              style={[
+                styles.actionButton,
+                status === 'working' && styles.workingButton,
+              ]}
+            >
+              <View style={[
+                styles.actionButtonInner,
+                status === 'working' && styles.workingButtonInner,
+              ]}>
+                {isLoading ? (
+                  <Text style={styles.actionButtonText}>...</Text>
+                ) : (
+                  <>
+                    <Icon
+                      name={status === 'working' ? 'time-outline' : 'finger-print-outline'}
+                      size={32}
+                      color={Colors.primary}
+                      style={styles.actionIcon}
+                    />
+                    <Text style={styles.actionButtonText}>
+                      {status === 'working' ? '퇴근하기' : '출근하기'}
                     </Text>
-                  ) : (
-                    <Text style={styles.actionButtonSubtext}>
-                      시작할 준비 완료
-                    </Text>
-                  )}
-                </>
-              )}
-            </View>
-          </TouchableOpacity>
+                    {status === 'working' && startTime ? (
+                      <Text style={styles.actionButtonStartTime}>
+                        {formatTime(startTime)} ~
+                      </Text>
+                    ) : (
+                      <Text style={styles.actionButtonSubtext}>
+                        탭하여 시작
+                      </Text>
+                    )}
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
 
           {/* Work Duration */}
           {status === 'working' && (
@@ -456,6 +486,20 @@ const styles = StyleSheet.create({
     ...Typography.small,
     color: Colors.textSecondary,
   },
+  noticeBadge: {
+    backgroundColor: Colors.error,
+    borderRadius: 7,
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 2,
+  },
+  noticeBadgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.surface,
+  },
   toggleAndBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -497,47 +541,81 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
-  actionButton: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
+  // Nest-style neumorphism button
+  buttonContainer: {
+    width: 200,
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  glowRing: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 3,
+    borderColor: Colors.primary,
+    opacity: 0.4,
+  },
+  actionButton: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+    // Neumorphism shadows
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 8,
   },
   workingButton: {
-    backgroundColor: Colors.primary,
-  },
-  readyButton: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: '#F0F4F8',
   },
   actionButtonInner: {
-    width: 216,
-    height: 216,
-    borderRadius: 108,
-    borderWidth: 4,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    // Inner shadow effect via border
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.04)',
+    // Subtle inner highlight
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: -4, height: -4 },
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+  },
+  workingButtonInner: {
+    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(0, 0, 0, 0.06)',
+    borderWidth: 1,
+  },
+  actionIcon: {
+    marginBottom: Spacing.sm,
   },
   actionButtonText: {
-    ...Typography.heading2,
-    color: Colors.surface,
-    marginBottom: Spacing.xs,
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  actionButtonTextReady: {
+    color: Colors.text,
   },
   actionButtonSubtext: {
-    ...Typography.caption,
-    color: 'rgba(255, 255, 255, 0.8)',
+    ...Typography.small,
+    color: Colors.textMuted,
+    marginTop: Spacing.xs,
   },
   actionButtonStartTime: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#FFEB3B',
-    letterSpacing: 1,
+    color: Colors.textMuted,
+    marginTop: Spacing.xs,
   },
   durationContainer: {
     flexDirection: 'row',
