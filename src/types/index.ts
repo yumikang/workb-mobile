@@ -30,15 +30,19 @@ export type MainTabParamList = {
 };
 
 // User Types
+// HR 시스템 역할 (백엔드 hr.ts와 일치)
+export type UserRole = 'admin' | 'hr' | 'manager' | 'employee';
+
 export interface User {
   id: string;
   email: string;
   displayName: string;
-  role: 'owner' | 'admin' | 'leader' | 'member' | 'guest';
+  role: UserRole;
   photoURL?: string;
   workspaceId?: string;
   teamId?: string;
   department?: string;
+  position?: string; // 직책
 }
 
 // Attendance Types

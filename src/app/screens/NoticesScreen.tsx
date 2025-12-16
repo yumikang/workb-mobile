@@ -82,8 +82,8 @@ const NoticesScreen: React.FC = () => {
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  // 관리자 권한 확인
-  const isAdmin = user?.role === 'admin' || user?.role === 'leader' || user?.role === 'owner';
+  // 관리자 권한 확인 (admin, hr, manager는 게시판 관리 가능)
+  const isAdmin = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
 
   // DEV 모드에서 목 데이터 사용
   const [localNotices, setLocalNotices] = useState<Notice[]>(mockNotices);

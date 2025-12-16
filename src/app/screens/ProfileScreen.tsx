@@ -226,8 +226,12 @@ const ProfileScreen: React.FC = () => {
           <Text style={styles.userEmail}>{user?.email || ''}</Text>
           <View style={styles.userBadge}>
             <Text style={styles.userBadgeText}>
-              {user?.role === 'admin' || user?.role === 'leader'
-                ? '관리자'
+              {user?.role === 'admin'
+                ? '최고관리자'
+                : user?.role === 'hr'
+                ? 'HR 담당자'
+                : user?.role === 'manager'
+                ? '매니저'
                 : '직원'}
             </Text>
           </View>
@@ -322,9 +326,11 @@ const ProfileScreen: React.FC = () => {
                 <Text style={styles.infoLabel}>권한</Text>
                 <Text style={styles.infoValueDisabled}>
                   {user?.role === 'admin'
-                    ? '관리자'
-                    : user?.role === 'leader'
-                    ? '리더'
+                    ? '최고관리자'
+                    : user?.role === 'hr'
+                    ? 'HR 담당자'
+                    : user?.role === 'manager'
+                    ? '매니저'
                     : '직원'}
                 </Text>
               </View>
@@ -503,9 +509,11 @@ const ProfileScreen: React.FC = () => {
                 <View style={styles.formInputDisabled}>
                   <Text style={styles.formInputDisabledText}>
                     {user?.role === 'admin'
-                      ? '관리자'
-                      : user?.role === 'leader'
-                      ? '리더'
+                      ? '최고관리자'
+                      : user?.role === 'hr'
+                      ? 'HR 담당자'
+                      : user?.role === 'manager'
+                      ? '매니저'
                       : '직원'}
                   </Text>
                   <Icon name="lock-closed" size={16} color={Colors.textMuted} />

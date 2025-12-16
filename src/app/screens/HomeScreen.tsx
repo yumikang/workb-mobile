@@ -52,8 +52,8 @@ const HomeScreen: React.FC = () => {
   // TODO: Replace with actual unread notice count from store/API
   const unreadNoticeCount = 2;
 
-  // 관리자 권한 확인 (admin 또는 leader 역할)
-  const isAdmin = user?.role === 'admin' || user?.role === 'leader';
+  // 관리자 권한 확인 (admin, hr, manager는 관리 기능 접근 가능)
+  const isAdmin = user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager';
 
   // Initialize location service and subscribe to changes
   useEffect(() => {

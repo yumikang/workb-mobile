@@ -194,9 +194,10 @@ const LoginScreen: React.FC = () => {
                     id: 'dev-staff',
                     email: 'staff@workb.com',
                     displayName: '김직원',
-                    role: 'member',
+                    role: 'employee',
                     workspaceId: 'dev-workspace',
                     department: '개발팀',
+                    position: '사원',
                   },
                   token: 'dev-token',
                   workspaceId: 'dev-workspace',
@@ -219,6 +220,7 @@ const LoginScreen: React.FC = () => {
                     role: 'admin',
                     workspaceId: 'dev-workspace',
                     department: '경영지원팀',
+                    position: '대표',
                   },
                   token: 'dev-token',
                   workspaceId: 'dev-workspace',
@@ -228,6 +230,52 @@ const LoginScreen: React.FC = () => {
               }}
             >
               <Text style={styles.devAdminText}>[DEV] 관리자로 로그인</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.devSkipButton, styles.devHrButton]}
+              onPress={() => {
+                // HR 담당자로 로그인
+                useAuthStore.setState({
+                  user: {
+                    id: 'dev-hr',
+                    email: 'hr@workb.com',
+                    displayName: '이인사',
+                    role: 'hr',
+                    workspaceId: 'dev-workspace',
+                    department: '인사팀',
+                    position: '팀장',
+                  },
+                  token: 'dev-token',
+                  workspaceId: 'dev-workspace',
+                  isAuthenticated: true,
+                });
+                navigation.replace('MainTabs');
+              }}
+            >
+              <Text style={styles.devHrText}>[DEV] HR 담당자로 로그인</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.devSkipButton, styles.devManagerButton]}
+              onPress={() => {
+                // 매니저로 로그인
+                useAuthStore.setState({
+                  user: {
+                    id: 'dev-manager',
+                    email: 'manager@workb.com',
+                    displayName: '최매니저',
+                    role: 'manager',
+                    workspaceId: 'dev-workspace',
+                    department: '개발팀',
+                    position: '팀장',
+                  },
+                  token: 'dev-token',
+                  workspaceId: 'dev-workspace',
+                  isAuthenticated: true,
+                });
+                navigation.replace('MainTabs');
+              }}
+            >
+              <Text style={styles.devManagerText}>[DEV] 매니저로 로그인</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -370,6 +418,22 @@ const styles = StyleSheet.create({
   },
   devAdminText: {
     color: '#6B6BFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  devHrButton: {
+    backgroundColor: '#F0FFF0',
+  },
+  devHrText: {
+    color: '#2E8B57',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  devManagerButton: {
+    backgroundColor: '#FFF8E0',
+  },
+  devManagerText: {
+    color: '#D4A017',
     fontSize: 14,
     fontWeight: '600',
   },
