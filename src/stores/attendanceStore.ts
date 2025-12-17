@@ -30,8 +30,19 @@ interface AttendanceState {
   cleanupListeners: () => void;
 }
 
+// 오늘 날짜인지 확인 (0시 기준)
+const isToday = (date: Date | null): boolean => {
+  if (!date) return false;
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+};
+
 export const useAttendanceStore = create<AttendanceState>((set, get) => ({
-  status: 'loading',
+  status: 'not_checked_in',
   startTime: null,
   endTime: null,
   workDuration: '00:00:00',
@@ -42,10 +53,32 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   fetchStatus: async () => {
     set({ isLoading: true });
 
-    // DEV MODE: Skip API call
+    // DEV MODE: Check if need to reset for new day
     if (__DEV__) {
+      const { startTime, endTime, status } = get();
+
+      // 출근 기록이 오늘 것이 아니면 리셋
+      if (startTime && !isToday(startTime)) {
+        console.log('[Attendance] DEV MODE: New day detected, resetting status');
+        set({
+          status: 'not_checked_in',
+          startTime: null,
+          endTime: null,
+          workDuration: '00:00:00',
+          isLoading: false,
+        });
+        return;
+      }
+
+      // 이미 상태가 있으면 유지
+      if (status !== 'loading') {
+        set({ isLoading: false });
+        return;
+      }
+
+      // 초기 상태는 미출근
       console.log('[Attendance] DEV MODE: Using local state');
-      set({ isLoading: false });
+      set({ status: 'not_checked_in', isLoading: false });
       return;
     }
 

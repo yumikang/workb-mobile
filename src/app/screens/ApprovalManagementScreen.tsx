@@ -206,12 +206,7 @@ const ApprovalManagementScreen: React.FC = () => {
   };
 
   const renderLeaveItem = (item: LeaveRequest) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles.requestCard}
-      onPress={() => openLeaveDetail(item)}
-      activeOpacity={0.7}
-    >
+    <View key={item.id} style={styles.requestCard}>
       <View style={styles.requestHeader}>
         <View style={styles.employeeInfo}>
           <Text style={styles.employeeName}>{item.employeeName}</Text>
@@ -236,20 +231,19 @@ const ApprovalManagementScreen: React.FC = () => {
         <Text style={styles.requestedAt}>신청일: {item.requestedAt}</Text>
       </View>
 
-      <View style={styles.cardFooter}>
+      <TouchableOpacity
+        style={styles.cardFooter}
+        onPress={() => openLeaveDetail(item)}
+        activeOpacity={0.7}
+      >
         <Text style={styles.viewDetailText}>상세보기</Text>
         <Icon name="chevron-forward" size={16} color={Colors.primary} />
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderCorrectionItem = (item: CorrectionRequest) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles.requestCard}
-      onPress={() => openCorrectionDetail(item)}
-      activeOpacity={0.7}
-    >
+    <View key={item.id} style={styles.requestCard}>
       <View style={styles.requestHeader}>
         <View style={styles.employeeInfo}>
           <Text style={styles.employeeName}>{item.employeeName}</Text>
@@ -278,11 +272,15 @@ const ApprovalManagementScreen: React.FC = () => {
         <Text style={styles.requestedAt}>신청일: {item.requestedAt}</Text>
       </View>
 
-      <View style={styles.cardFooter}>
+      <TouchableOpacity
+        style={styles.cardFooter}
+        onPress={() => openCorrectionDetail(item)}
+        activeOpacity={0.7}
+      >
         <Text style={styles.viewDetailText}>상세보기</Text>
         <Icon name="chevron-forward" size={16} color={Colors.primary} />
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderDetailModal = () => {

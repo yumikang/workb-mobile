@@ -279,12 +279,20 @@ const ProfileScreen: React.FC = () => {
                     styles.statusDot,
                     {
                       backgroundColor:
-                        status === 'working' ? Colors.success : Colors.textMuted,
+                        status === 'working'
+                          ? Colors.success
+                          : status === 'out'
+                          ? Colors.textMuted
+                          : Colors.warning, // not_checked_in (미출근)
                     },
                   ]}
                 />
                 <Text style={styles.statusText}>
-                  {status === 'working' ? '근무 중' : '퇴근'}
+                  {status === 'working'
+                    ? '근무 중'
+                    : status === 'out'
+                    ? '퇴근'
+                    : '미출근'}
                 </Text>
                 {status === 'working' && startTime && (
                   <Text style={styles.statusTime}>

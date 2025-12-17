@@ -47,7 +47,10 @@ export interface User {
 }
 
 // Attendance Types
-export type AttendanceStatus = 'working' | 'out' | 'loading';
+// not_checked_in: 오늘 출근 전 (0시 기준 리셋)
+// working: 출근 후 근무 중
+// out: 출근 후 퇴근 완료
+export type AttendanceStatus = 'not_checked_in' | 'working' | 'out' | 'loading';
 export type WorkLocation = 'office' | 'remote' | 'field';
 
 export interface AttendanceRecord {
