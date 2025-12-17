@@ -108,7 +108,7 @@ const ProfileScreen: React.FC = () => {
     setShowEditModal(true);
   };
 
-  const handleImagePicker = () => {
+  const handleImagePicker = (forEdit: boolean = true) => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
@@ -117,9 +117,9 @@ const ProfileScreen: React.FC = () => {
         },
         (buttonIndex) => {
           if (buttonIndex === 1) {
-            openCamera();
+            openCamera(forEdit);
           } else if (buttonIndex === 2) {
-            openGallery();
+            openGallery(forEdit);
           }
         }
       );
@@ -129,14 +129,14 @@ const ProfileScreen: React.FC = () => {
         '사진을 선택하세요',
         [
           { text: '취소', style: 'cancel' },
-          { text: '사진 촬영', onPress: openCamera },
-          { text: '앨범에서 선택', onPress: openGallery },
+          { text: '사진 촬영', onPress: () => openCamera(forEdit) },
+          { text: '앨범에서 선택', onPress: () => openGallery(forEdit) },
         ]
       );
     }
   };
 
-  const openCamera = async () => {
+  const openCamera = async (forEdit: boolean = true) => {
     const result = await launchCamera({
       mediaType: 'photo',
       maxWidth: 500,
@@ -145,11 +145,16 @@ const ProfileScreen: React.FC = () => {
     });
 
     if (result.assets && result.assets[0]?.uri) {
-      setEditPhotoUri(result.assets[0].uri);
+      if (forEdit) {
+        setEditPhotoUri(result.assets[0].uri);
+      } else {
+        // 직접 프로필 사진 업데이트
+        await updateProfilePhoto(result.assets[0].uri);
+      }
     }
   };
 
-  const openGallery = async () => {
+  const openGallery = async (forEdit: boolean = true) => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       maxWidth: 500,
@@ -158,7 +163,28 @@ const ProfileScreen: React.FC = () => {
     });
 
     if (result.assets && result.assets[0]?.uri) {
-      setEditPhotoUri(result.assets[0].uri);
+      if (forEdit) {
+        setEditPhotoUri(result.assets[0].uri);
+      } else {
+        // 직접 프로필 사진 업데이트
+        await updateProfilePhoto(result.assets[0].uri);
+      }
+    }
+  };
+
+  const updateProfilePhoto = async (photoUri: string) => {
+    try {
+      if (updateProfile) {
+        await updateProfile({
+          displayName: user?.displayName || '',
+          email: user?.email || '',
+          photoURL: photoUri,
+        });
+        Alert.alert('완료', '프로필 사진이 변경되었습니다');
+      }
+    } catch (error) {
+      Alert.alert('오류', '프로필 사진 변경에 실패했습니다');
+      console.error('Photo update failed:', error);
     }
   };
 
@@ -212,16 +238,16 @@ const ProfileScreen: React.FC = () => {
       <ScrollView style={styles.scrollView}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          <TouchableOpacity style={styles.avatarLarge} onPress={openEditModal}>
+          <View style={styles.avatarLarge}>
             {user?.photoURL ? (
               <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
             ) : (
               <Icon name="person" size={48} color={Colors.textSecondary} />
             )}
-            <View style={styles.avatarEditBadge}>
+            <TouchableOpacity style={styles.avatarEditBadge} onPress={() => handleImagePicker(false)}>
               <Icon name="camera" size={14} color={Colors.surface} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.userName}>{user?.displayName || '사용자'}</Text>
           <Text style={styles.userEmail}>{user?.email || ''}</Text>
           <View style={styles.userBadge}>
