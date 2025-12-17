@@ -182,101 +182,101 @@ const LoginScreen: React.FC = () => {
           로그인하면 서비스 이용약관에 동의하게 됩니다.
         </Text>
 
-        {/* DEV ONLY - Skip Login */}
+        {/* DEV ONLY - Skip Login (2x2 Grid) */}
         {__DEV__ && (
           <View style={styles.devButtonsContainer}>
-            <TouchableOpacity
-              style={styles.devSkipButton}
-              onPress={() => {
-                // 일반 직원으로 로그인
-                useAuthStore.setState({
-                  user: {
-                    id: 'dev-staff',
-                    email: 'staff@workb.com',
-                    displayName: '김직원',
-                    role: 'employee',
+            <View style={styles.devButtonRow}>
+              <TouchableOpacity
+                style={[styles.devButton, styles.devStaffButton]}
+                onPress={() => {
+                  useAuthStore.setState({
+                    user: {
+                      id: 'dev-staff',
+                      email: 'staff@workb.com',
+                      displayName: '김직원',
+                      role: 'employee',
+                      workspaceId: 'dev-workspace',
+                      department: '개발팀',
+                      position: '사원',
+                    },
+                    token: 'dev-token',
                     workspaceId: 'dev-workspace',
-                    department: '개발팀',
-                    position: '사원',
-                  },
-                  token: 'dev-token',
-                  workspaceId: 'dev-workspace',
-                  isAuthenticated: true,
-                });
-                navigation.replace('MainTabs');
-              }}
-            >
-              <Text style={styles.devSkipText}>[DEV] 직원으로 로그인</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.devSkipButton, styles.devAdminButton]}
-              onPress={() => {
-                // 관리자로 로그인
-                useAuthStore.setState({
-                  user: {
-                    id: 'dev-admin',
-                    email: 'admin@workb.com',
-                    displayName: '박관리자',
-                    role: 'admin',
+                    isAuthenticated: true,
+                  });
+                  navigation.replace('MainTabs');
+                }}
+              >
+                <Text style={styles.devStaffText}>직원</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.devButton, styles.devAdminButton]}
+                onPress={() => {
+                  useAuthStore.setState({
+                    user: {
+                      id: 'dev-admin',
+                      email: 'admin@workb.com',
+                      displayName: '박관리자',
+                      role: 'admin',
+                      workspaceId: 'dev-workspace',
+                      department: '경영지원팀',
+                      position: '대표',
+                    },
+                    token: 'dev-token',
                     workspaceId: 'dev-workspace',
-                    department: '경영지원팀',
-                    position: '대표',
-                  },
-                  token: 'dev-token',
-                  workspaceId: 'dev-workspace',
-                  isAuthenticated: true,
-                });
-                navigation.replace('MainTabs');
-              }}
-            >
-              <Text style={styles.devAdminText}>[DEV] 관리자로 로그인</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.devSkipButton, styles.devHrButton]}
-              onPress={() => {
-                // HR 담당자로 로그인
-                useAuthStore.setState({
-                  user: {
-                    id: 'dev-hr',
-                    email: 'hr@workb.com',
-                    displayName: '이인사',
-                    role: 'hr',
+                    isAuthenticated: true,
+                  });
+                  navigation.replace('MainTabs');
+                }}
+              >
+                <Text style={styles.devAdminText}>대표</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.devButtonRow}>
+              <TouchableOpacity
+                style={[styles.devButton, styles.devHrButton]}
+                onPress={() => {
+                  useAuthStore.setState({
+                    user: {
+                      id: 'dev-hr',
+                      email: 'hr@workb.com',
+                      displayName: '이인사',
+                      role: 'hr',
+                      workspaceId: 'dev-workspace',
+                      department: '인사팀',
+                      position: '팀장',
+                    },
+                    token: 'dev-token',
                     workspaceId: 'dev-workspace',
-                    department: '인사팀',
-                    position: '팀장',
-                  },
-                  token: 'dev-token',
-                  workspaceId: 'dev-workspace',
-                  isAuthenticated: true,
-                });
-                navigation.replace('MainTabs');
-              }}
-            >
-              <Text style={styles.devHrText}>[DEV] HR 담당자로 로그인</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.devSkipButton, styles.devManagerButton]}
-              onPress={() => {
-                // 매니저로 로그인
-                useAuthStore.setState({
-                  user: {
-                    id: 'dev-manager',
-                    email: 'manager@workb.com',
-                    displayName: '최매니저',
-                    role: 'manager',
+                    isAuthenticated: true,
+                  });
+                  navigation.replace('MainTabs');
+                }}
+              >
+                <Text style={styles.devHrText}>HR</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.devButton, styles.devManagerButton]}
+                onPress={() => {
+                  useAuthStore.setState({
+                    user: {
+                      id: 'dev-manager',
+                      email: 'manager@workb.com',
+                      displayName: '최매니저',
+                      role: 'manager',
+                      workspaceId: 'dev-workspace',
+                      department: '개발팀',
+                      position: '팀장',
+                    },
+                    token: 'dev-token',
                     workspaceId: 'dev-workspace',
-                    department: '개발팀',
-                    position: '팀장',
-                  },
-                  token: 'dev-token',
-                  workspaceId: 'dev-workspace',
-                  isAuthenticated: true,
-                });
-                navigation.replace('MainTabs');
-              }}
-            >
-              <Text style={styles.devManagerText}>[DEV] 매니저로 로그인</Text>
-            </TouchableOpacity>
+                    isAuthenticated: true,
+                  });
+                  navigation.replace('MainTabs');
+                }}
+              >
+                <Text style={styles.devManagerText}>팀장</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </KeyboardAvoidingView>
@@ -399,26 +399,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
   },
   devButtonsContainer: {
-    marginTop: Spacing.xl,
-    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+    gap: Spacing.xs,
   },
-  devSkipButton: {
-    padding: Spacing.md,
+  devButtonRow: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  devButton: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
     alignItems: 'center',
+    borderRadius: BorderRadius.sm,
+  },
+  devStaffButton: {
     backgroundColor: '#FFF0F0',
-    borderRadius: BorderRadius.md,
+  },
+  devStaffText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontWeight: '600',
   },
   devAdminButton: {
     backgroundColor: '#F0F0FF',
   },
-  devSkipText: {
-    color: '#FF6B6B',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   devAdminText: {
     color: '#6B6BFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   devHrButton: {
@@ -426,7 +433,7 @@ const styles = StyleSheet.create({
   },
   devHrText: {
     color: '#2E8B57',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   devManagerButton: {
@@ -434,7 +441,7 @@ const styles = StyleSheet.create({
   },
   devManagerText: {
     color: '#D4A017',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
 });

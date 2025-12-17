@@ -1,7 +1,7 @@
 /**
  * WORKB Mobile - Home Screen
  * Main dashboard with attendance check-in/out
- * Supports Leader/Staff mode toggle
+ * Admin users see additional management features
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -24,7 +24,6 @@ import { useAuthStore, useAttendanceStore } from '../../stores';
 import { RootStackParamList } from '../../types';
 import { locationService, LocationStatus, WifiStatus } from '../../services';
 
-type ViewMode = 'leader' | 'staff';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const HomeScreen: React.FC = () => {
@@ -41,7 +40,6 @@ const HomeScreen: React.FC = () => {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('staff');
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
 
@@ -201,46 +199,8 @@ const HomeScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Mode Toggle + Status Badges Row */}
-          <View style={styles.toggleAndBadgesRow}>
-            {/* Mode Toggle - 관리자만 표시 */}
-            {isAdmin && (
-              <View style={styles.modeToggleContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.modeToggleButton,
-                    viewMode === 'leader' && styles.modeToggleButtonActive,
-                  ]}
-                  onPress={() => setViewMode('leader')}
-                >
-                  <Text
-                    style={[
-                      styles.modeToggleText,
-                      viewMode === 'leader' && styles.modeToggleTextActive,
-                    ]}
-                  >
-                    관리자
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.modeToggleButton,
-                    viewMode === 'staff' && styles.modeToggleButtonActive,
-                  ]}
-                  onPress={() => setViewMode('staff')}
-                >
-                  <Text
-                    style={[
-                      styles.modeToggleText,
-                      viewMode === 'staff' && styles.modeToggleTextActive,
-                    ]}
-                  >
-                    직원
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
+          {/* Status Badges Row */}
+          <View style={styles.statusBadgesRow}>
             <View style={styles.statusBadges}>
               <View style={styles.badge}>
                 <Icon name="location-outline" size={14} color={getLocationColor()} />
@@ -354,8 +314,8 @@ const HomeScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Leader Mode: 관리자 전용 기능 - 승인 관리만 */}
-        {viewMode === 'leader' && isAdmin && (
+        {/* 관리자 전용 기능 - 승인 관리 */}
+        {isAdmin && (
           <View style={styles.adminSection}>
             <Text style={styles.sectionTitle}>관리자 메뉴</Text>
 
@@ -543,10 +503,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.surface,
   },
-  toggleAndBadgesRow: {
+  statusBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   mainArea: {
     alignItems: 'center',
@@ -715,29 +675,6 @@ const styles = StyleSheet.create({
     ...Typography.small,
     color: Colors.success,
     fontWeight: '600',
-  },
-  // Mode Toggle Styles
-  modeToggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.full,
-    padding: 4,
-  },
-  modeToggleButton: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.full,
-  },
-  modeToggleButtonActive: {
-    backgroundColor: Colors.primary,
-  },
-  modeToggleText: {
-    ...Typography.caption,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  modeToggleTextActive: {
-    color: Colors.surface,
   },
   // Admin Section Styles
   adminSection: {
