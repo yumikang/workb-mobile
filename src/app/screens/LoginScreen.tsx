@@ -23,17 +23,19 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import { RootStackParamList } from '../../types';
 import { Colors, Typography, Spacing, BorderRadius } from '../../constants';
 import { useAuthStore } from '../../stores';
+import { appleAuthService } from '../../services';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const { login, loginWithGoogle, isLoading } = useAuthStore();
+  const { login, loginWithGoogle, loginWithApple, isLoading } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -61,6 +63,32 @@ const LoginScreen: React.FC = () => {
       }
     } finally {
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    if (!appleAuthService.isSupported()) {
+      Alert.alert('알림', '이 기기에서 Apple 로그인을 지원하지 않습니다.');
+      return;
+    }
+
+    try {
+      setIsAppleLoading(true);
+      const credential = await appleAuthService.signIn();
+      await loginWithApple(
+        credential.identityToken,
+        credential.authorizationCode,
+        credential.fullName
+      );
+    } catch (error: any) {
+      if (error.message === 'CANCELED') {
+        // 사용자가 취소함
+      } else {
+        Alert.alert('로그인 실패', 'Apple 로그인에 실패했습니다.');
+        console.error('Apple Sign-In Error:', error);
+      }
+    } finally {
+      setIsAppleLoading(false);
     }
   };
 
@@ -175,6 +203,24 @@ const LoginScreen: React.FC = () => {
               </>
             )}
           </TouchableOpacity>
+
+          {Platform.OS === 'ios' ? (
+            <TouchableOpacity
+              style={[styles.appleButton, isAppleLoading && styles.buttonDisabled]}
+              onPress={handleAppleLogin}
+              activeOpacity={0.8}
+              disabled={isAppleLoading}
+            >
+              {isAppleLoading ? (
+                <ActivityIndicator color={Colors.surface} />
+              ) : (
+                <>
+                  <Icon name="logo-apple" size={20} color={Colors.surface} style={styles.appleIcon} />
+                  <Text style={styles.appleButtonText}>Apple로 계속하기</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {/* Footer */}
@@ -391,6 +437,21 @@ const styles = StyleSheet.create({
   googleButtonText: {
     ...Typography.button,
     color: Colors.text,
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
+  },
+  appleIcon: {
+    marginRight: Spacing.sm,
+  },
+  appleButtonText: {
+    ...Typography.button,
+    color: Colors.surface,
   },
   footerText: {
     ...Typography.small,

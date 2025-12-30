@@ -9,3 +9,5 @@ export { AnalyticsService, default as Analytics } from './AnalyticsService';
 export { networkService, default as NetworkService } from './NetworkService';
 export { locationService, default as LocationService } from './LocationService';
 export type { LocationStatus, WifiStatus } from './LocationService';
+export { appleAuthService, default as AppleAuthService } from './AppleAuthService';
+export type { AppleAuthCredential } from './AppleAuthService';

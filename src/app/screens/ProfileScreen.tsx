@@ -230,9 +230,7 @@ const ProfileScreen: React.FC = () => {
           <Icon name="chevron-back" size={24} color={Colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>내 프로필</Text>
-        <TouchableOpacity style={styles.editButton} onPress={openEditModal}>
-          <Icon name="create-outline" size={24} color={Colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.editButton} />
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -337,7 +335,7 @@ const ProfileScreen: React.FC = () => {
               <View style={styles.infoCardHeader}>
                 <Text style={styles.infoCardTitle}>기본 정보</Text>
                 <TouchableOpacity onPress={openEditModal}>
-                  <Text style={styles.editLinkText}>수정</Text>
+                  <Icon name="create-outline" size={20} color={Colors.primary} />
                 </TouchableOpacity>
               </View>
               <View style={styles.infoRow}>

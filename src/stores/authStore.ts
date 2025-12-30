@@ -28,6 +28,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithApple: (identityToken: string, authorizationCode: string, fullName?: { givenName: string | null; familyName: string | null } | null) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
@@ -113,6 +114,48 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error: any) {
       set({ isLoading: false });
       console.error('[Auth] Google login failed:', error.message);
+      throw error;
+    }
+  },
+
+  loginWithApple: async (identityToken: string, authorizationCode: string, fullName?: { givenName: string | null; familyName: string | null } | null) => {
+    set({ isLoading: true });
+
+    try {
+      const response = await api.post('/auth/apple', {
+        identityToken,
+        authorizationCode,
+        fullName: fullName ? `${fullName.givenName || ''} ${fullName.familyName || ''}`.trim() : undefined,
+      });
+      const { token, user } = response.data;
+
+      if (!token || !user) {
+        throw new Error('Invalid response from server');
+      }
+
+      // Store credentials
+      await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_INFO, JSON.stringify(user));
+      if (user.workspaceId) {
+        await AsyncStorage.setItem(STORAGE_KEYS.WORKSPACE_ID, user.workspaceId);
+      }
+
+      // Update state
+      set({
+        user,
+        token,
+        workspaceId: user.workspaceId,
+        isLoading: false,
+        isAuthenticated: true,
+      });
+
+      // Initialize services after login
+      await get().initializeServicesAfterLogin(user);
+
+      console.log('[Auth] Apple login successful:', user.email);
+    } catch (error: any) {
+      set({ isLoading: false });
+      console.error('[Auth] Apple login failed:', error.message);
       throw error;
     }
   },

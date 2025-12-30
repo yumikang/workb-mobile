@@ -23,6 +23,7 @@ import { RootStackParamList } from './src/types';
 // Ignore specific warnings
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
+  'Sending `onAnimatedValueUpdate` with no listeners registered',
 ]);
 
 // Navigation ref for deep linking and push notification navigation
