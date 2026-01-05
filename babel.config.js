@@ -1,5 +1,6 @@
 module.exports = {
-  presets: ['module:@react-native/babel-preset', 'nativewind/babel'],
+  // nativewind disabled - not used and causes Android issues
+  presets: ['module:@react-native/babel-preset'],
   plugins: [
     [
       'module-resolver',

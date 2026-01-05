@@ -52,3 +52,4 @@ coverage/
 *.log
 tmp/
 temp/
+node_modules
