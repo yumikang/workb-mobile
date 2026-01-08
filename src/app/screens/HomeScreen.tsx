@@ -42,6 +42,8 @@ const HomeScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [checkInTime, setCheckInTime] = useState<Date | null>(null);
+  const [showCheckOutModal, setShowCheckOutModal] = useState(false);
+  const [checkOutTime, setCheckOutTime] = useState<Date | null>(null);
 
   // Location & Wi-Fi status
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('unknown');
@@ -128,6 +130,9 @@ const HomeScreen: React.FC = () => {
     try {
       if (status === 'working') {
         await checkOut();
+        const now = new Date();
+        setCheckOutTime(now);
+        setShowCheckOutModal(true);
       } else {
         await checkIn();
         const now = new Date();
@@ -417,6 +422,34 @@ const HomeScreen: React.FC = () => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => setShowCheckInModal(false)}
+            >
+              <Text style={styles.modalButtonText}>확인</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* 퇴근 완료 모달 */}
+      <Modal
+        visible={showCheckOutModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowCheckOutModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalCheckIconCheckOut}>
+              <Icon name="log-out-outline" size={48} color={Colors.success} />
+            </View>
+            <Text style={styles.modalTime}>{formatTime(checkOutTime)}</Text>
+            <Text style={styles.modalTitle}>퇴근 처리되었습니다!</Text>
+            <View style={styles.modalWorkspace}>
+              <Icon name="business-outline" size={16} color={Colors.textSecondary} />
+              <Text style={styles.modalWorkspaceText}>WORKB</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowCheckOutModal(false)}
             >
               <Text style={styles.modalButtonText}>확인</Text>
             </TouchableOpacity>
@@ -755,6 +788,15 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: Colors.primaryLight + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
+  modalCheckIconCheckOut: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.success + '20',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.lg,
